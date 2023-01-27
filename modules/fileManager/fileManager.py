@@ -15,12 +15,16 @@ class FileManager(object):
     def __setPaths(self, root : str):
         financeFolder = "finance"
         stocksFolder = "stocks"
+        stocksJson = "stocks.json"
+        stocksCsv = "stocks.csv"
         dictPaths = {
             "path" : root,
             "finance" : {
                 "path" : os.path.join(root, financeFolder),
                 "stocks" : {
                     "path" : os.path.join(root, financeFolder, stocksFolder),
+                    "stocksJson" : os.path.join(root, financeFolder, stocksFolder, stocksJson),
+                    "stocksCsv" : os.path.join(root, financeFolder, stocksFolder, stocksCsv),
                 }
             }
         }

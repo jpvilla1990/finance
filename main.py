@@ -15,5 +15,9 @@ async def downloadAllStocks():
 async def downloadStocksCountry():
     return backEnd.downloadStocksCountry("ARG")
 
+@app.get("/finance/stock_data/getAllStocksInfo")
+async def getAllStocksInfo():
+    return backEnd.getAllStocksInfo()
+
 if __name__ == "__main__":
-    uvicorn.run(app=app, host="127.0.0.1", port=9000)
+    uvicorn.run(app=app, host="127.0.0.1", port=9100)

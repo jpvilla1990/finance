@@ -75,6 +75,8 @@ class YahooFinanceScraper(Scraper):
             self.browserAutomator.finishSession()
             self.browserAutomator.startSession("/screener/equity/new/")
 
+        return FileManager.loadJson(constants.stocksJson)
+
     def scrapeAllStocks(self):
         """
         Method to scrape all stocks
@@ -82,4 +84,4 @@ class YahooFinanceScraper(Scraper):
         for country in list(constants.countries.keys()):
             self.scrapeStocksCountry(country)
 
-        #self.browserAutomator.finishSession()
+        return FileManager.loadJson(constants.stocksJson)
