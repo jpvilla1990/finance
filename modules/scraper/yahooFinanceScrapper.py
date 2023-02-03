@@ -85,3 +85,47 @@ class YahooFinanceScraper(Scraper):
             self.scrapeStocksCountry(country)
 
         return FileManager.loadJson(constants.stocksJson)
+
+    def getFieldByNameInStockInfo(self, fieldName : str):
+        """
+        Method to obtain value of a field by name
+        """
+        elementStock = self.browserAutomator.getElementByText(fieldName)
+        parentElementStock = self.browserAutomator.getParentFromElement(elementStock, 2)
+        targetElement = self.browserAutomator.getChildByIndex(parentElementStock, 1)
+
+        return targetElement.text
+
+    def getTextByContainedText(self, text : str):
+        """
+        Method to get a text by regex rule
+        """
+        return self.browserAutomator.getTextByContainedText(text)
+
+    def getStockData(self, stock):
+        """
+        Method to scrape specific stock
+        """
+        stockData = {}
+        try:
+            self.browserAutomator.startSession("/quote/" + stock + "/key-statistics")
+            try:
+                self.browserAutomator.clickButtonBy("value", "agree")
+                self.browserAutomator.clickButtonBy("aria-label", "Close", retry=True)
+            except:
+                pass
+            enterpriseValue = self.getFieldByNameInStockInfo("Enterprise Value").replace(",", "")
+            averagePrice = self.getFieldByNameInStockInfo("200-Day Moving Average").replace(",", "")
+            dividendYield = self.getFieldByNameInStockInfo("Forward Annual Dividend Yield")
+            currency = self.getTextByContainedText("Currency in ").split("Currency in ")[1]
+            stockData.update({
+                "enterpriseValue" : enterpriseValue,
+                "averagePrice" : averagePrice,
+                "dividendYield" : dividendYield,
+                "currency" : currency,
+            })
+
+        except Exception as e:
+            print("Failed stock: " + stock)
+
+        return stockData

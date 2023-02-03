@@ -24,7 +24,7 @@ class BackEnd(FileManager):
                 stockCsvFile.write(row + "\n")
         else:
             with open(self.getPaths()["finance"]["stocks"]["stocksCsv"], "w") as stockCsvFile:
-                stockCsvFile.write("country,stock,name,dividendYiel,currentPrice,currency\n")
+                stockCsvFile.write("country,stock,name,dividendYiel,currentPrice,currency,enterpriseValue\n")
                 stockCsvFile.write(row + "\n")
 
     def downloadAllStocks(self):
@@ -61,11 +61,8 @@ class BackEnd(FileManager):
         """
         Method to get stock info
         """
-        ticker = yf.Ticker(stock)
-        sharePrice = round(float(ticker.history()["Open"][0]), 4)
-        dividends = self.getDividends(stock)
-        currency = ticker.fast_info["currency"]
-        return sharePrice, dividends, currency
+        stockData = self.scraper.getStockData(stock)
+        return stockData["enterpriseValue"], stockData["averagePrice"], stockData["dividendYield"], stockData["currency"]
 
     def getAllStocksInfo(self):
         """
@@ -78,10 +75,18 @@ class BackEnd(FileManager):
         for country in stocks.keys():
             for stock in stocks[country].keys():
                 try:
-                    sharePrice, dividends, currency = self.getStock(stock)
-                    dividendYield = round(dividends / sharePrice, 3)
-                    if dividends != 0.0:
-                        stockRow = constants.countries[country] + "," + stock + "," + stocks[country][stock] + "," + str(dividendYield) + "," + str(sharePrice) + "," +  str(currency)
+                    enterpriseValue, averagePrice, dividendYield, currency = self.getStock(stock)
+                    if dividendYield == 0.0 or dividendYield == "N/A":
+                        pass
+                    elif dividendYield == "":
+                        print(enterpriseValue)
+                        print(averagePrice)
+                        print(dividendYield)
+                        print(currency)
+                        return
+                    else:
+                        stockRow = constants.countries[country] + "," + stock + "," + stocks[country][stock].replace(",", "") + "," + str(dividendYield) + "," + str(averagePrice) + "," +  str(currency) + "," + str(enterpriseValue)
                         self.saveStock(stockRow)
                 except Exception as e:
                     print("Error in stock: " + stock)
+                    print(e)

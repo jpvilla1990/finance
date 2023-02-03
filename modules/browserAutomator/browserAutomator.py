@@ -1,6 +1,7 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.webelement import RemoteWebElement
 from webdriver_manager.firefox import GeckoDriverManager
 from modules.browserAutomator import constants
 
@@ -12,7 +13,9 @@ class BrowserAutomator(object):
         self.__url = None
         self.__delay = constants.delayBrowserAutomation
 
-        self.browser = webdriver.Firefox(executable_path=GeckoDriverManager().install())
+        options = webdriver.FirefoxOptions()
+        options.add_argument("-headless")
+        self.browser = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=options)
 
     def setUrl(self, url : str):
         """
@@ -132,6 +135,52 @@ class BrowserAutomator(object):
             element = self.browser.find_element(By.XPATH, '//' + type)
 
         return element
+
+    def getElementByText(self, text : str, retry=False):
+        """
+        Method to get element by text
+        """
+        assert self.__url is not None, "main url has not been set"
+        time.sleep(constants.delayBrowserAutomation)
+        retries = 0
+        error = ""
+        if retry:
+            while(retries < constants.retries):
+                try:
+                    element = self.browser.find_element(By.XPATH, '//*[text()="' + text + '"]')
+                    break
+                except Exception as e:
+                    time.sleep(constants.delayBrowserAutomation)
+                    error = e
+                retries += 1
+            if retries == constants.retries:
+                raise Exception("Max retries reached: " + str(constants.retries) + ", with error: " + str(error))
+        else:
+            element = self.browser.find_element(By.XPATH, '//*[text()="' + text + '"]')
+
+        return element
+
+    def getParentFromElement(self, element : RemoteWebElement, level : int):
+        """
+        Return parent of an element
+        """
+        for iteration in range(level):
+            element = element.find_element(By.XPATH, "..")
+
+        return element
+
+    def getChildByIndex(self, element : RemoteWebElement, index : int):
+        """
+        Method to return child element by index
+        """
+        return element.find_elements(By.XPATH, "./*")[index]
+
+    def getTextByContainedText(self, text : str):
+        """
+        Method to return text using a contained text
+        """
+        element = self.browser.find_element(By.XPATH, "//*[contains(text(), '" + text + "')]")
+        return element.text
 
     def finishSession(self):
         """
